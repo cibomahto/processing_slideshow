@@ -3,38 +3,38 @@
  * looks for new photos and displays them
  */
 
-int cols = 5;
-int rows = 5;
+int cols = 4;
+int rows = 4;
 
 int cellSpacing = 6;
 
 int screenWidth = 900;
 int screenHeight = 600;
 
-int transitionSpeed = 20;
-int assetLifetime = 100;
+int transitionSpeed = 150;
+int assetLifetime = 300;
 
 // List of things we are drawing
 ArrayList drawables;
 
 Grid grid;
 
-// 238, 242, 255
+ImageFinder imageFinder;
 
 void setup() {
   size(screenWidth, screenHeight);
+
+  colorMode(RGB, 255, 255, 255, 255);
   
   drawables = new ArrayList();
 
   grid = new Grid(new PVector(cols, rows), assetLifetime, transitionSpeed, cellSpacing);
   
-  // make a demo image
-//  drawables.add( new ImageDrawable( loadImage("jelly.jpg"),
-//                                    new PVector(0,0),
-//                                    new PVector(width/cols, width/rows)) );
+  imageFinder = new ImageFinder(sketchPath + "/data");
 
-   fill(color(238, 242, 255));
-   rect(0,0,width,height);
+  noStroke();  
+  fill(color(238, 242, 255));
+  rect(0,0,width,height);
 }
 
 
@@ -53,8 +53,26 @@ void draw() {
   // Remove dead drawables
   for (int i = drawables.size() - 1; i >= 0; i-- ) {
     if( ((Drawable) drawables.get(i)).isdead() ) {
-      println("removing dead drawable: " + i);
       drawables.remove(i);
+    }
+  }
+}
+
+
+// Image finder load all available images, then periodically searches for new ones.
+// It then passes them to the grid for display.
+class ImageFinder {
+  String path;
+  
+  ImageFinder(String path_) {
+    path = path_;   
+    File[] files = listFiles(path);
+    for (int i = 0; i < files.length; i++) {
+      File f = files[i];    
+      println("Name: " + f.getName());
+      String lastModified = new Date(f.lastModified()).toString();
+      println("Last Modified: " + lastModified);
+      println("-----------------------");
     }
   }
 }
@@ -79,7 +97,7 @@ class Grid {
   // Lifetimes for each object in the grid
   int[] lifetimes;
   
-  // Minimum number of frames an asset should be displayed before it is replaced.
+  // Minimum number of frames an asset should be displayed before it can be replaced.
   int minLifetime;
   
   // Number of frames it takes to fade in an asset
@@ -221,26 +239,38 @@ class Grid {
 
     if (timeTillNextReplacement == 0) {
       // Once a cell reaches a certain age, randomly we should replace it
-      for (int cell = 0; cell < cellCount; cell++) {
-        if ( lifetimes[cell] > minLifetime) {
-          if (random(100) > 99) {
-            // grab a random image from the pool
-            // TODO: use things besides images
 
-            // Replace it with some kind of asset
-            int type = int(random(100));
-            if (type < 30) {
-              int newColorIndex = int(random(int(colors.length)));
-              replaceAsset( cell, colors[newColorIndex] );
-            }
-            else {
-              int newImageIndex = int(random(int(images.size())));
-              replaceAsset( cell, (PImage)images.get(newImageIndex) );
-            }
-            
-            timeTillNextReplacement = fadeInTime * 2;
-          }
+     ArrayList expired = new ArrayList();
+      
+      // Search for replacable cells
+      for (int cell = 0; cell < cellCount; cell++) {
+        if (lifetimes[cell] > minLifetime) {
+          expired.add((Integer)cell);
         }
+      }
+      if (expired.size() > 0) {
+        
+        // If we have fewer than 2/3 images, just load an image
+        // Otherwise, swap out an image for a rect, and swap in a new image
+        
+        // Choose a cell and replace it
+        int cellToExpire = (Integer)expired.get(int(random(expired.size())));
+
+        // Replace it with something different than what was there
+        // (picture for color and vice versa)
+        String objectName = cellAssets[cellToExpire].getClass().getName();
+      
+        if (objectName == "Camera_trap_slideshow$RectangleDrawable") {
+          int newImageIndex = int(random(int(images.size())));
+          replaceAsset( cellToExpire, (PImage)images.get(newImageIndex) );
+        }
+        else {
+          int newColorIndex = int(random(int(colors.length)));
+          replaceAsset( cellToExpire, colors[newColorIndex] );
+        }
+            
+//        timeTillNextReplacement = fadeInTime;
+        timeTillNextReplacement = fadeInTime/2;
       }
     }
   }
@@ -355,7 +385,6 @@ class ImageDrawable extends Drawable {
     if (fadeInTimeCounter > -1) {
       int fade = int(255.0*(fadeInTime - fadeInTimeCounter)/fadeInTime);
       fadeInTimeCounter -= 1;
-      
       tint(255, fade);
       image(bitmap, loc.x, loc.y, extents.x, extents.y);
       tint(255);
@@ -363,6 +392,60 @@ class ImageDrawable extends Drawable {
     else {
 //      image(bitmap, loc.x, loc.y, extents.x, extents.y);
     }
+  }
+}
+
+
+
+// File functions are from:
+// http://processing.org/learning/topics/directorylist.html
+
+
+// This function returns all the files in a directory as an array of Strings  
+String[] listFileNames(String dir) {
+  File file = new File(dir);
+  if (file.isDirectory()) {
+    String names[] = file.list();
+    return names;
+  } else {
+    // If it's not a directory
+    return null;
+  }
+}
+
+// This function returns all the files in a directory as an array of File objects
+// This is useful if you want more info about the file
+File[] listFiles(String dir) {
+  File file = new File(dir);
+  if (file.isDirectory()) {
+    File[] files = file.listFiles();
+    return files;
+  } else {
+    // If it's not a directory
+    return null;
+  }
+}
+
+// Function to get a list ofall files in a directory and all subdirectories
+ArrayList listFilesRecursive(String dir) {
+   ArrayList fileList = new ArrayList(); 
+   recurseDir(fileList,dir);
+   return fileList;
+}
+
+// Recursive function to traverse subdirectories
+void recurseDir(ArrayList a, String dir) {
+  File file = new File(dir);
+  if (file.isDirectory()) {
+    // If you want to include directories in the list
+    a.add(file);  
+    File[] subfiles = file.listFiles();
+    for (int i = 0; i < subfiles.length; i++) {
+      // Call this function on all files in this directory
+      recurseDir(a,subfiles[i].getAbsolutePath());
+    }
+  } else {
+    a.add(file);
   }
 }
 
