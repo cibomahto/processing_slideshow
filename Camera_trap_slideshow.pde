@@ -3,13 +3,21 @@
  * looks for new photos and displays them
  */
 
-int cols = 4;
+import java.util.concurrent.*;
+import fullscreen.*; 
+
+FullScreen fs;
+
+int cols = 5;
 int rows = 4;
 
 int cellSpacing = 6;
 
-int screenWidth = 900;
+int screenWidth = 800;
 int screenHeight = 600;
+float assetAspectRatio = 3.0/2;
+
+Boolean doFullScreen = false;
 
 int transitionSpeed = 150;
 int assetLifetime = 300;
@@ -20,6 +28,7 @@ ArrayList drawables;
 Grid grid;
 
 ImageFinder imageFinder;
+Thread loadThread;
 
 void setup() {
   size(screenWidth, screenHeight);
@@ -28,17 +37,37 @@ void setup() {
   
   drawables = new ArrayList();
 
-  grid = new Grid(new PVector(cols, rows), assetLifetime, transitionSpeed, cellSpacing);
+  grid = new Grid(new PVector(cols, rows), assetAspectRatio, 
+                  assetLifetime, transitionSpeed, cellSpacing);
   
   imageFinder = new ImageFinder(sketchPath + "/data");
+  loadThread = new Thread(imageFinder);
+
+  loadThread.start();
 
   noStroke();  
-  fill(color(238, 242, 255));
+  fill(color(0));
   rect(0,0,width,height);
+  
+  grid.render();
+
+  if (doFullScreen) {
+    // Create the fullscreen object
+    fs = new FullScreen(this); 
+  
+    // enter fullscreen mode
+    fs.enter();
+  }
 }
 
 
-void draw() {  
+void draw() {
+
+  // If we have any new images available, add them
+  if(imageFinder.imageAvailable()) {
+    grid.addImage(imageFinder.getNextImage());
+  }
+  
   // Update the grid
   grid.update();
 
@@ -61,19 +90,92 @@ void draw() {
 
 // Image finder load all available images, then periodically searches for new ones.
 // It then passes them to the grid for display.
-class ImageFinder {
+class ImageFinder implements Runnable {
   String path;
   
+  // Last time we scanned the directory
+  Date lastChecked;
+
+  // Queue holding the enemies that are ready to shove out the door
+  private LinkedBlockingQueue  readyQueue = new LinkedBlockingQueue();
+  
   ImageFinder(String path_) {
-    path = path_;   
+    path = path_;    
+  }
+
+  // Add an image to the queue, presizing it as necessary
+  void addImage(PImage bitmap) {
+    PVector imageSize = grid.getImageSize();
+    bitmap.resize(int(imageSize.x), int(imageSize.y));
+
+    // Add some sample images
+    try{ 
+      readyQueue.put(bitmap);
+    } catch( InterruptedException e ) {
+      println("Interrupted Exception caught");
+    }
+  }
+  
+  public void run() {
+        println(new Date());
+    
+    // Find anything in the directory that looks like an image, and open it.
     File[] files = listFiles(path);
     for (int i = 0; i < files.length; i++) {
-      File f = files[i];    
-      println("Name: " + f.getName());
-      String lastModified = new Date(f.lastModified()).toString();
-      println("Last Modified: " + lastModified);
-      println("-----------------------");
+      File f = files[i];
+      
+      String fileName = f.getName();
+
+      if (fileName.endsWith(".JPG") || fileName.endsWith(".jpg")) {
+        addImage(loadImage(fileName));
+      }
     }
+    
+    lastChecked = new Date();
+    
+    while(true) {
+      // We should be polling for new images here, and adding them
+      
+      try{ 
+        Thread.sleep(3600);
+      } catch( InterruptedException e ) {
+        println("Interrupted Exception caught");
+      }
+      
+      Date newLastChecked = new Date();
+      
+      println("Checking for files modified after" + lastChecked);
+      // Find anything in the directory that looks like an image, and open it.
+      files = listFiles(path);
+      for (int i = 0; i < files.length; i++) {
+        File f = files[i];
+      
+        String fileName = f.getName();
+        
+        Date lastModified = new Date(f.lastModified());
+        
+        if (lastChecked.before(lastModified)) {
+          println(fileName);
+          if (fileName.endsWith(".JPG") || fileName.endsWith(".jpg")) {
+            addImage(loadImage(fileName));
+          }
+        }
+      }
+      
+      lastChecked = newLastChecked;
+    }
+  }
+  
+  public boolean imageAvailable() {
+    return (readyQueue.size() > 0);
+  }
+  
+  public int imageCount() {
+    return readyQueue.size();
+  }
+  
+  public PImage getNextImage() {
+    return (PImage) readyQueue.poll(); 
   }
 }
 
@@ -81,6 +183,10 @@ class ImageFinder {
 // Grid asset store, that manages the dispaly of all gridded objects
 class Grid {
   PVector gridSize;  // rows and colums to make the grid
+
+  int gWidth;
+  int gHeight;
+
 
   // Number of positions in the grid
   int cellCount;
@@ -108,13 +214,21 @@ class Grid {
 
   // Image size and location
   PVector imageSize;
+  
   PVector imageSpacing;
+
+  float imageAspectRatio;
+
+  // Offset of grid from origin, used to center grid in letterboxed scenarios
+  PVector gridOffset;
   
   // Border between cells
   int cellSpacing;
   
-  Grid(PVector gridSize_, int minLifetime_, int fadeInTime_, int cellSpacing_) {
+  Grid(PVector gridSize_, float imageAspectRatio_, int minLifetime_, int fadeInTime_, int cellSpacing_) {
     images = new ArrayList();
+    
+    imageAspectRatio = imageAspectRatio_;
     
     gridSize = gridSize_;
     minLifetime = minLifetime_;
@@ -123,42 +237,47 @@ class Grid {
     cellSpacing = cellSpacing_;
 
     // Precompute the image sizes
-    imageSize = new PVector((width - cellSpacing*(gridSize.x - 1))/gridSize.x,
-                            (height - cellSpacing*(gridSize.y - 1))/gridSize.y);
+    
+    // First, see if we have to letterbox
+    gWidth = width;
+    gHeight = height;
+    
+    float targetAspectRatio = imageAspectRatio*gridSize.x/gridSize.y;
+    
+    if (abs(gWidth/gHeight - targetAspectRatio) > .001) {
+      if (targetAspectRatio > gWidth/gHeight) {
+        gHeight = int(gWidth/targetAspectRatio);
+      }
+      else {
+        gWidth = int(gHeight*targetAspectRatio);
+      }
+    }
 
-    imageSpacing = new PVector(width/gridSize.x + int(cellSpacing/gridSize.x),
-                               height/gridSize.y + int(cellSpacing/gridSize.y));
+    // Center the grid 
+    gridOffset = new PVector(int((width - gWidth)/2), int((height - gHeight)/2));
+    
+    // Force the image to have integer size, rounding up
+    imageSize = new PVector(int((gWidth - cellSpacing*(gridSize.x - 1))/gridSize.x +.5),
+                            int((gHeight - cellSpacing*(gridSize.y - 1))/gridSize.y + .5));
+
+    // Leave the spacing as a float, so it will fill evently
+    imageSpacing = new PVector(gWidth/gridSize.x + cellSpacing/gridSize.x,
+                               gHeight/gridSize.y + cellSpacing/gridSize.y);
 
     
     cellCount = int(gridSize.x * gridSize.y);
     
     cellAssets =  new Drawable[cellCount];
     lifetimes =  new int[cellCount];
-    
-    colors = new color[7];
-    // Add some MAKE-friendly colors
-    colors[0] = color(156, 185, 95);
-    colors[1] = color(235, 169, 85);
-    colors[2] = color(238, 78, 77);
-    colors[3] = color(29, 90, 136);
-    colors[4] = color(47, 178, 189);
-    colors[5] = color(208, 105, 85);
-    colors[6] = color(200, 176, 77);
-    
-    
-    // and add a sample image so we don't choke
-    images.add(loadImage("DSC_5080.JPG"));
-    images.add(loadImage("DSC_5092.JPG"));
-    images.add(loadImage("DSC_5094.JPG"));
-    images.add(loadImage("DSC_5098.JPG"));
-    images.add(loadImage("DSC_5101.JPG"));
-    images.add(loadImage("DSC_5104.JPG"));
-    images.add(loadImage("DSC_5105.JPG"));
-    images.add(loadImage("DSC_5109.JPG"));
-    images.add(loadImage("DSC_5119.JPG"));
-    images.add(loadImage("DSC_5124.JPG"));
-    images.add(loadImage("DSC_5128.JPG"));
-    images.add(loadImage("DSC_5134.JPG"));
+
+    // Add some MAKE-friendly colors    
+    colors = new color[] {color(156, 185, 95),
+                          color(235, 169, 85),
+                          color(238, 78, 77),
+                          color(29, 90, 136),
+                          color(47, 178, 189),
+                          color(208, 105, 85),
+                          color(200, 176, 77) };
 
     // pre-fill with colors
     for (int cell = 0; cell < cellCount; cell++) {
@@ -172,59 +291,54 @@ class Grid {
     }
   }
 
-  // Add a new image to the grid
-  void addImage(PImage image_) {
-    images.add(image_);
-    
-    // Find the oldest object in the grid, and replace it
-    
-    // TODO: remove some images if we have a lot of them
+  // Get the image size, allows a separate thread to resize the image before sending it here
+  PVector getImageSize() {
+    return imageSize;
   }
 
-  // Replace an existing asset with a new one, killing the old one
-  void replaceAsset(int cell, PImage bitmap) {
+  // Add a new image to the grid
+  void addImage(PImage bitmap) {
+    images.add(bitmap);
+      
+    // TODO: remove some images if we have a lot of them (?)
+  }
+  
+  // Get a PVector pointing to the location of a cell
+  PVector getCellLocation(int cell) {
+    int assetX = int(int(cell%gridSize.x)*imageSpacing.x + gridOffset.x);
+    int assetY = int(int(cell/gridSize.x)*imageSpacing.y + gridOffset.y);
+ 
+    return new PVector(assetX, assetY);
+  }
+
+  void replaceAsset(int cell, Drawable newAsset) {
     // Kill the old asset
     if (cellAssets[cell] != null) {
       cellAssets[cell].scheduleDeath(fadeInTime);
     }
     
-    int assetX = int(int(cell%gridSize.x)*imageSpacing.x);
-    int assetY = int(int(cell/gridSize.y)*imageSpacing.y);
-
-    // Create the new image
-
-    Drawable newAsset = new ImageDrawable( bitmap,
-                                           new PVector(assetX, assetY),
-                                           imageSize,
-                                           fadeInTime);
-
     // Add it to our list, and to the world drawing list
     cellAssets[cell] = newAsset;
     lifetimes[cell] = 0;
     drawables.add(newAsset);
+  }
+  
+  // Replace an existing asset with a new one, killing the old one
+  void replaceAsset(int cell, PImage bitmap) {    
+    Drawable newAsset = new ImageDrawable( bitmap,
+                                           getCellLocation(cell),
+                                           imageSize,
+                                           fadeInTime);
+    replaceAsset(cell, newAsset);
   }
 
   // Replace an existing asset with a new one, killing the old one
   void replaceAsset(int cell, color rectColor) {
-    // Kill the old asset
-    if (cellAssets[cell] != null) {
-      cellAssets[cell].scheduleDeath(fadeInTime);
-    }
-    
-    int assetX = int(int(cell%gridSize.x)*imageSpacing.x);
-    int assetY = int(int(cell/gridSize.y)*imageSpacing.y);
-    
-    // Create the new image
-
     Drawable newAsset = new RectangleDrawable( rectColor,
-                                               new PVector(assetX, assetY),
+                                               getCellLocation(cell),
                                                imageSize,
                                                fadeInTime);
-    
-    // Add it to our list, and to the world drawing list
-    cellAssets[cell] = newAsset;
-    lifetimes[cell] = 0;
-    drawables.add(newAsset);
+    replaceAsset(cell, newAsset);
   }
 
 
@@ -260,7 +374,7 @@ class Grid {
         // (picture for color and vice versa)
         String objectName = cellAssets[cellToExpire].getClass().getName();
       
-        if (objectName == "Camera_trap_slideshow$RectangleDrawable") {
+        if ((objectName == "Camera_trap_slideshow$RectangleDrawable") && (images.size() > 0)) {
           int newImageIndex = int(random(int(images.size())));
           replaceAsset( cellToExpire, (PImage)images.get(newImageIndex) );
         }
@@ -275,6 +389,11 @@ class Grid {
     }
   }
   
+  void render() {
+    noStroke();  
+    fill(color(238, 242, 255));
+    rect(gridOffset.x, gridOffset.y, gWidth, gHeight);
+  }
 }
 
 
@@ -385,6 +504,7 @@ class ImageDrawable extends Drawable {
     if (fadeInTimeCounter > -1) {
       int fade = int(255.0*(fadeInTime - fadeInTimeCounter)/fadeInTime);
       fadeInTimeCounter -= 1;
+      
       tint(255, fade);
       image(bitmap, loc.x, loc.y, extents.x, extents.y);
       tint(255);
