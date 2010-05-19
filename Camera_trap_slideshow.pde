@@ -28,11 +28,13 @@ void setup() {
 //  drawables.add( new ImageDrawable( loadImage("jelly.jpg"),
 //                                    new PVector(0,0),
 //                                    new PVector(width/cols, width/rows)) );
+
+   fill(255);
+   rect(0,0,width,height);
 }
 
 
-void draw() {
-  
+void draw() {  
   // Update the grid
   grid.update();
 
@@ -64,6 +66,9 @@ class Grid {
   // Images we could potentially draw
   ArrayList images;
   
+  // Rectangle colors we can draw
+  color[] colors;
+  
   // Images that we are currently displaying
   Drawable[] cellAssets;
   
@@ -91,9 +96,11 @@ class Grid {
     cellAssets =  new Drawable[cellCount];
     lifetimes =  new int[cellCount];
     
-    for (int i = 0; i < cellCount; i++) {
-      lifetimes[i] = 0;
-    }
+    colors = new color[3];
+    // Add some MAKE-friendly colors
+    colors[0] = color(255,0,0);
+    colors[1] = color(0,255,0);
+    colors[2] = color(0,0,255);
     
     // and add a sample image so we don't choke
     images.add(loadImage("DSC_5080.JPG"));
@@ -108,6 +115,17 @@ class Grid {
     images.add(loadImage("DSC_5124.JPG"));
     images.add(loadImage("DSC_5128.JPG"));
     images.add(loadImage("DSC_5134.JPG"));
+
+    // pre-fill with colors
+    for (int cell = 0; cell < cellCount; cell++) {
+      int newColorIndex = int(random(int(colors.length)));
+      replaceAssetR( cell, colors[newColorIndex] );
+    }
+
+    // and randomize starting lifetimes   
+    for (int i = 0; i < cellCount; i++) {
+      lifetimes[i] = int(random(minLifetime));
+    }
   }
 
   // Add a new image to the grid
@@ -133,6 +151,7 @@ class Grid {
     int assetY = int(cell/gridSize.y)*assetH;
     
     // Create the new image
+
     Drawable newAsset = new ImageDrawable( bitmap,
                                            new PVector(assetX, assetY),
                                            new PVector(assetW, assetH),
@@ -143,6 +162,33 @@ class Grid {
     lifetimes[cell] = 0;
     drawables.add(newAsset);
   }
+
+  // Replace an existing asset with a new one, killing the old one
+  void replaceAssetR(int cell, color rectColor) {
+    // Kill the old asset
+    if (cellAssets[cell] != null) {
+      cellAssets[cell].scheduleDeath(fadeInTime);
+    }
+    
+    int assetW = int(width/gridSize.x);
+    int assetH = int(height/gridSize.y);
+    
+    int assetX = int(cell%gridSize.x)*assetW;
+    int assetY = int(cell/gridSize.y)*assetH;
+    
+    // Create the new image
+
+    Drawable newAsset = new RectangleDrawable( rectColor,
+                                               new PVector(assetX, assetY),
+                                               new PVector(assetW, assetH),
+                                               fadeInTime);
+    
+    // Add it to our list, and to the world drawing list
+    cellAssets[cell] = newAsset;
+    lifetimes[cell] = 0;
+    drawables.add(newAsset);
+  }
+
 
   void update() {
     for (int cell = 0; cell < cellCount; cell++) {
@@ -160,8 +206,17 @@ class Grid {
           if (random(100) > 99) {
             // grab a random image from the pool
             // TODO: use things besides images
-            int newImageIndex = int(random(int(images.size())));
-            replaceAsset( cell, (PImage)images.get(newImageIndex) );
+
+            // Replace it with some kind of asset
+            int type = int(random(100));
+            if (type < 30) {
+              int newColorIndex = int(random(int(colors.length)));
+              replaceAssetR( cell, colors[newColorIndex] );
+            }
+            else {
+              int newImageIndex = int(random(int(images.size())));
+              replaceAsset( cell, (PImage)images.get(newImageIndex) );
+            }
             
             timeTillNextReplacement = fadeInTime * 2;
           }
@@ -206,6 +261,50 @@ class Drawable {
   }
 }
 
+
+class RectangleDrawable extends Drawable {
+  color rectColor;
+  int fadeInTime;
+  int fadeInTimeCounter;
+  
+  RectangleDrawable(color rectColor_, PVector loc_, PVector extents_, int fadeInTime_) {
+    rectColor = rectColor_;
+    loc = loc_;
+    extents = extents_;
+    
+    fadeInTime = fadeInTime_;
+    fadeInTimeCounter = fadeInTime_;
+  }
+  
+  void update() {
+    
+    if (timeToDie > 0) {
+      timeToDie -= 1;
+    }
+    
+    if (timeToDie == 0) {
+      dead = true;
+    }
+  }
+  
+  void render() {
+    // If we are fading in, do that.
+    if (fadeInTimeCounter > -1) {
+      int fade = int(255.0*(fadeInTime - fadeInTimeCounter)/fadeInTime);
+      fadeInTimeCounter -= 1;
+      
+      fill(rectColor, fade);
+      noStroke();
+      rect(loc.x, loc.y, extents.x, extents.y);
+    }
+    else {
+//      image(bitmap, loc.x, loc.y, extents.x, extents.y);
+    }
+  }
+}
+
+
+
 class ImageDrawable extends Drawable {
   PImage bitmap;  // Image to draw
   int fadeInTime;
@@ -233,7 +332,7 @@ class ImageDrawable extends Drawable {
   
   void render() {
     // If we are fading in, do that.
-    if (fadeInTimeCounter > 0) {
+    if (fadeInTimeCounter > -1) {
       int fade = int(255.0*(fadeInTime - fadeInTimeCounter)/fadeInTime);
       fadeInTimeCounter -= 1;
       
