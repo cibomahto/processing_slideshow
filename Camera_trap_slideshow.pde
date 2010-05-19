@@ -3,8 +3,10 @@
  * looks for new photos and displays them
  */
 
-int cols = 3;
-int rows = 3;
+int cols = 5;
+int rows = 5;
+
+int cellSpacing = 6;
 
 int screenWidth = 900;
 int screenHeight = 600;
@@ -17,19 +19,21 @@ ArrayList drawables;
 
 Grid grid;
 
+// 238, 242, 255
+
 void setup() {
   size(screenWidth, screenHeight);
   
   drawables = new ArrayList();
 
-  grid = new Grid(new PVector(cols, rows), assetLifetime, transitionSpeed);
+  grid = new Grid(new PVector(cols, rows), assetLifetime, transitionSpeed, cellSpacing);
   
   // make a demo image
 //  drawables.add( new ImageDrawable( loadImage("jelly.jpg"),
 //                                    new PVector(0,0),
 //                                    new PVector(width/cols, width/rows)) );
 
-   fill(255);
+   fill(color(238, 242, 255));
    rect(0,0,width,height);
 }
 
@@ -83,24 +87,46 @@ class Grid {
   
   // Counter so that we don't replace more than one asset at a time
   int timeTillNextReplacement = 0;
+
+  // Image size and location
+  PVector imageSize;
+  PVector imageSpacing;
   
-  Grid(PVector gridSize_, int minLifetime_, int fadeInTime_) {
+  // Border between cells
+  int cellSpacing;
+  
+  Grid(PVector gridSize_, int minLifetime_, int fadeInTime_, int cellSpacing_) {
     images = new ArrayList();
     
     gridSize = gridSize_;
     minLifetime = minLifetime_;
     fadeInTime = fadeInTime_;
+
+    cellSpacing = cellSpacing_;
+
+    // Precompute the image sizes
+    imageSize = new PVector((width - cellSpacing*(gridSize.x - 1))/gridSize.x,
+                            (height - cellSpacing*(gridSize.y - 1))/gridSize.y);
+
+    imageSpacing = new PVector(width/gridSize.x + int(cellSpacing/gridSize.x),
+                               height/gridSize.y + int(cellSpacing/gridSize.y));
+
     
     cellCount = int(gridSize.x * gridSize.y);
     
     cellAssets =  new Drawable[cellCount];
     lifetimes =  new int[cellCount];
     
-    colors = new color[3];
+    colors = new color[7];
     // Add some MAKE-friendly colors
-    colors[0] = color(255,0,0);
-    colors[1] = color(0,255,0);
-    colors[2] = color(0,0,255);
+    colors[0] = color(156, 185, 95);
+    colors[1] = color(235, 169, 85);
+    colors[2] = color(238, 78, 77);
+    colors[3] = color(29, 90, 136);
+    colors[4] = color(47, 178, 189);
+    colors[5] = color(208, 105, 85);
+    colors[6] = color(200, 176, 77);
+    
     
     // and add a sample image so we don't choke
     images.add(loadImage("DSC_5080.JPG"));
@@ -119,7 +145,7 @@ class Grid {
     // pre-fill with colors
     for (int cell = 0; cell < cellCount; cell++) {
       int newColorIndex = int(random(int(colors.length)));
-      replaceAssetR( cell, colors[newColorIndex] );
+      replaceAsset( cell, colors[newColorIndex] );
     }
 
     // and randomize starting lifetimes   
@@ -144,17 +170,14 @@ class Grid {
       cellAssets[cell].scheduleDeath(fadeInTime);
     }
     
-    int assetW = int(width/gridSize.x);
-    int assetH = int(height/gridSize.y);
-    
-    int assetX = int(cell%gridSize.x)*assetW;
-    int assetY = int(cell/gridSize.y)*assetH;
-    
+    int assetX = int(int(cell%gridSize.x)*imageSpacing.x);
+    int assetY = int(int(cell/gridSize.y)*imageSpacing.y);
+
     // Create the new image
 
     Drawable newAsset = new ImageDrawable( bitmap,
                                            new PVector(assetX, assetY),
-                                           new PVector(assetW, assetH),
+                                           imageSize,
                                            fadeInTime);
 
     // Add it to our list, and to the world drawing list
@@ -164,23 +187,20 @@ class Grid {
   }
 
   // Replace an existing asset with a new one, killing the old one
-  void replaceAssetR(int cell, color rectColor) {
+  void replaceAsset(int cell, color rectColor) {
     // Kill the old asset
     if (cellAssets[cell] != null) {
       cellAssets[cell].scheduleDeath(fadeInTime);
     }
     
-    int assetW = int(width/gridSize.x);
-    int assetH = int(height/gridSize.y);
-    
-    int assetX = int(cell%gridSize.x)*assetW;
-    int assetY = int(cell/gridSize.y)*assetH;
+    int assetX = int(int(cell%gridSize.x)*imageSpacing.x);
+    int assetY = int(int(cell/gridSize.y)*imageSpacing.y);
     
     // Create the new image
 
     Drawable newAsset = new RectangleDrawable( rectColor,
                                                new PVector(assetX, assetY),
-                                               new PVector(assetW, assetH),
+                                               imageSize,
                                                fadeInTime);
     
     // Add it to our list, and to the world drawing list
@@ -211,7 +231,7 @@ class Grid {
             int type = int(random(100));
             if (type < 30) {
               int newColorIndex = int(random(int(colors.length)));
-              replaceAssetR( cell, colors[newColorIndex] );
+              replaceAsset( cell, colors[newColorIndex] );
             }
             else {
               int newImageIndex = int(random(int(images.size())));
