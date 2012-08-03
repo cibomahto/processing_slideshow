@@ -1,9 +1,9 @@
-class ImageDrawable extends Drawable {
-  PImage bitmap;  // Image to draw
-  int fadeInTime;
-  int fadeInTimeCounter;
+class DrawableImage extends Drawable {
+  PImage bitmap;                     // Image to draw
+  int fadeInTime;                    // Amount of fade in time
+  int fadeInTimeCounter;             // Counter to fade in
   
-  ImageDrawable(PImage bitmap_, PVector loc_, PVector extents_, int fadeInTime_) {
+  DrawableImage(PImage bitmap_, PVector loc_, PVector extents_, int fadeInTime_) {
     bitmap = bitmap_;
     loc = loc_;
     extents = extents_;
@@ -23,7 +23,7 @@ class ImageDrawable extends Drawable {
     }
   }
   
-  void render() {
+  void draw() {
     // If we are fading in, do that.
     if (fadeInTimeCounter > -1) {
       int fade = int(255.0*(fadeInTime - fadeInTimeCounter)/fadeInTime);

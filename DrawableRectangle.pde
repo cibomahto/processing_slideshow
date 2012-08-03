@@ -1,9 +1,9 @@
-class RectangleDrawable extends Drawable {
+class DrawableRectangle extends Drawable {
   color rectColor;
   int fadeInTime;
   int fadeInTimeCounter;
   
-  RectangleDrawable(color rectColor_, PVector loc_, PVector extents_, int fadeInTime_) {
+  DrawableRectangle(color rectColor_, PVector loc_, PVector extents_, int fadeInTime_) {
     rectColor = rectColor_;
     loc = loc_;
     extents = extents_;
@@ -13,7 +13,6 @@ class RectangleDrawable extends Drawable {
   }
   
   void update() {
-    
     if (timeToDie > 0) {
       timeToDie -= 1;
     }
@@ -23,15 +22,15 @@ class RectangleDrawable extends Drawable {
     }
   }
   
-  void render() {
+  void draw() {
+    int fade = int(255.0*(fadeInTime - fadeInTimeCounter)/fadeInTime);
+    fill(rectColor, fade);
+    noStroke();
+    rect(loc.x, loc.y, extents.x, extents.y);
+    
     // If we are fading in, do that.
     if (fadeInTimeCounter > -1) {
-      int fade = int(255.0*(fadeInTime - fadeInTimeCounter)/fadeInTime);
       fadeInTimeCounter -= 1;
-      
-      fill(rectColor, fade);
-      noStroke();
-      rect(loc.x, loc.y, extents.x, extents.y);
     }
   }
 }

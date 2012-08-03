@@ -5,7 +5,6 @@ class Grid {
   int gWidth;
   int gHeight;
 
-
   // Number of positions in the grid
   int cellCount;
   
@@ -43,12 +42,12 @@ class Grid {
   // Border between cells
   int cellSpacing;
   
-  Grid(PVector gridSize_, float imageAspectRatio_, int minLifetime_, int fadeInTime_, int cellSpacing_) {
+  Grid(int gridColumns_, int gridRows_, float imageAspectRatio_, int minLifetime_, int fadeInTime_, int cellSpacing_) {
     images = new ArrayList();
     
     imageAspectRatio = imageAspectRatio_;
     
-    gridSize = gridSize_;
+    gridSize = new PVector(gridColumns_, gridRows_);
     minLifetime = minLifetime_;
     fadeInTime = fadeInTime_;
 
@@ -143,7 +142,7 @@ class Grid {
   
   // Replace an existing asset with a new one, killing the old one
   void replaceAsset(int cell, PImage bitmap) {    
-    Drawable newAsset = new ImageDrawable( bitmap,
+    Drawable newAsset = new DrawableImage( bitmap,
                                            getCellLocation(cell),
                                            imageSize,
                                            fadeInTime);
@@ -152,7 +151,7 @@ class Grid {
 
   // Replace an existing asset with a new one, killing the old one
   void replaceAsset(int cell, color rectColor) {
-    Drawable newAsset = new RectangleDrawable( rectColor,
+    Drawable newAsset = new DrawableRectangle( rectColor,
                                                getCellLocation(cell),
                                                imageSize,
                                                fadeInTime);
@@ -207,7 +206,7 @@ class Grid {
     }
   }
   
-  void render() {
+  void draw() {
     noStroke();  
     fill(color(238, 242, 255));
     rect(gridOffset.x, gridOffset.y, gWidth, gHeight);

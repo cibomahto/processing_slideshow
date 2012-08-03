@@ -1,8 +1,8 @@
 class Drawable {
-  PVector loc = new PVector();    // x,y coordinates of top left corner
-  PVector extents = new PVector();  // height, width of object  
-  boolean dead = false;
-  int timeToDie = -1;    // If -1, we are alive.  If > 0, dying.  If 0, dead.
+  PVector loc = new PVector();             // x,y coordinates of top left corner
+  PVector extents = new PVector();         // height, width of object  
+  boolean dead = false;                    // 
+  int timeToDie = -1;                      // If -1, we are alive.  If > 0, dying.  If 0, dead.
   
   void update() {
     if (timeToDie > 0) {
@@ -13,15 +13,14 @@ class Drawable {
     }    
   }
   
-  void render() {
+  void draw() {
   }
 
   // kill the object in n frames
   void scheduleDeath(int timeToDie_) {
     timeToDie = timeToDie_;
   }
-    
-    
+
   void kill() {
     dead = true;
   }
