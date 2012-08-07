@@ -17,8 +17,6 @@ int transitionSpeed = 150;        // How long an image transition takes (frames)
 int assetLifetime = 300;          // Length of time (frames) that an image will last.
 /////////////////////////  Configuration options  /////////////////////////
 
-
-ArrayList<Drawable> drawables;    // List of things we are drawing (todo: wtf)
 Grid grid;                        // Grid object
 
 ImageFinder imageFinder;
@@ -26,10 +24,8 @@ Thread loadThread;
 
 
 void setup() {
-//  size(screen.width, screen.height);
-  size(640,480);
-  
-  drawables = new ArrayList<Drawable>();
+  size(screen.width, screen.height);
+//  size(640,480);
 
   grid = new Grid(
     cols, rows,
@@ -61,19 +57,6 @@ void draw() {
   rect(0,0,width,height);
   
   grid.draw();
-
-  // Handle all of the drawables
-  for (int i = 0; i < drawables.size(); i++) {
-    drawables.get(i).update();
-    drawables.get(i).draw();
-  }
-  
-  // Remove dead drawables
-  for (int i = drawables.size() - 1; i >= 0; i-- ) {
-    if(drawables.get(i).isdead() ) {
-      drawables.remove(i);
-    }
-  }
 }
 
 

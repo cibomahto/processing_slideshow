@@ -2,6 +2,8 @@ class DrawableImage extends Drawable {
   PImage bitmap;                     // Image to draw
   int fadeInTime;                    // Amount of fade in time
   int fadeInTimeCounter;             // Counter to fade in
+  PVector loc = new PVector();             // x,y coordinates of top left corner
+  PVector extents = new PVector();         // height, width of object  
   
   DrawableImage(PImage bitmap_, PVector loc_, PVector extents_, int fadeInTime_) {
     bitmap = bitmap_;

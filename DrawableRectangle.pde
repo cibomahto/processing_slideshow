@@ -2,6 +2,8 @@ class DrawableRectangle extends Drawable {
   color rectColor;
   int fadeInTime;
   int fadeInTimeCounter;
+  PVector loc = new PVector();             // x,y coordinates of top left corner
+  PVector extents = new PVector();         // height, width of object  
   
   DrawableRectangle(color rectColor_, PVector loc_, PVector extents_, int fadeInTime_) {
     rectColor = rectColor_;
