@@ -24,13 +24,13 @@ File[] listFiles(String dir) {
 // It then passes them to the grid for display.
 class ImageFinder implements Runnable {
 
-  String path;                             // Directory that we should be scanning for new images
+  String m_path;                             // Directory that we should be scanning for new images
   LinkedBlockingQueue<PImage> readyQueue;  // Queue holding the images that are ready to shove out the door
   
   // Init a new Image Finder
   // @param path_ directory scan for images (note: this is relative to the data/ directory of the sketch)
-  ImageFinder(String path_) {
-    path = path_;
+  ImageFinder(String path) {
+    m_path = path;
     readyQueue = new LinkedBlockingQueue<PImage>();
   }
 
@@ -38,7 +38,7 @@ class ImageFinder implements Runnable {
   // Preprocess the image, and add it to the ready queue.
   // @param bitmap Image to load
   void addImage(PImage bitmap) {
-    PVector imageSize = grid.getImageSize();
+    PVector imageSize = grid.m_imageSize;
     
     // TODO: Crop to match the aspect ratio...
     
@@ -53,7 +53,7 @@ class ImageFinder implements Runnable {
     msk.noStroke();
     msk.background(0);
     drawFuzzyRectangle(0,0,bitmap.width,bitmap.height,
-                       grid.fadeWidth, color(255,255,255), msk);
+                       grid.m_fadeWidth, color(255,255,255), msk);
     msk.endDraw();
     bitmap.mask(msk);
 //    bitmap.blend(msk, 0,0,bitmap.width, bitmap.height, 0,0,bitmap.width,bitmap.height,MULTIPLY);
@@ -71,7 +71,7 @@ class ImageFinder implements Runnable {
   public void run() {
     
     // Find anything in the directory that looks like an image, and open it.
-    File[] files = listFiles(path);
+    File[] files = listFiles(m_path);
     for (int i = 0; i < files.length; i++) {
       String fileName = files[i].getName();
 
@@ -95,7 +95,7 @@ class ImageFinder implements Runnable {
       
       println("Checking for files modified after" + lastChecked);
       // Find anything in the directory that looks like an image, and open it.
-      files = listFiles(path);
+      files = listFiles(m_path);
       for (int i = 0; i < files.length; i++) {
         File f = files[i];
       

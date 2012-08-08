@@ -1,36 +1,36 @@
 class DrawableRectangle extends Drawable {
-  color rectColor;
-  int fadeInTime;
-  int fadeInTimeCounter;
-  int fadeWidth;
-  PVector loc = new PVector();             // x,y coordinates of top left corner
-  PVector extents = new PVector();         // height, width of object  
+  color m_rectColor;
+  int m_fadeInTime;
+  int m_fadeInTimeCounter;
+  int m_fadeWidth;
+  PVector m_loc = new PVector();             // x,y coordinates of top left corner
+  PVector m_extents = new PVector();         // height, width of object  
   
-  DrawableRectangle(color rectColor_, PVector loc_, PVector extents_, int fadeInTime_, int fadeWidth_) {
-    rectColor = rectColor_;
-    loc = loc_;
-    extents = extents_;
+  DrawableRectangle(color rectColor, PVector loc, PVector extents, int fadeInTime, int fadeWidth) {
+    m_rectColor = rectColor;
+    m_loc = loc;
+    m_extents = extents;
     
-    fadeInTime = fadeInTime_;
-    fadeInTimeCounter = fadeInTime_;
-    fadeWidth = fadeWidth_;
+    m_fadeInTime = fadeInTime;
+    m_fadeInTimeCounter = fadeInTime;
+    m_fadeWidth = fadeWidth;
   }
   
   void draw() {
     int fade = 0;
     
-    if (fadeInTimeCounter > -1) {
-      fade = int(255.0*(fadeInTime - fadeInTimeCounter)/fadeInTime);
-      fadeInTimeCounter -= 1;
+    if (m_fadeInTimeCounter > -1) {
+      fade = int(255.0*(m_fadeInTime - m_fadeInTimeCounter)/m_fadeInTime);
+      m_fadeInTimeCounter -= 1;
     }
-    else if(timeToDie > -1) {      
-      fade = int(255.0*(timeToDie)/fadeInTime);
+    else if(m_timeToDie > -1) {
+      fade = int(255.0*(m_timeToDie)/m_fadeInTime);
     }
     else {
       fade = 255;
     }
 
-    drawFuzzyRectangle(loc.x, loc.y, extents.x, extents.y,
-                        fadeWidth, color(red(rectColor), green(rectColor), blue(rectColor), fade), g);
+    drawFuzzyRectangle(m_loc.x, m_loc.y, m_extents.x, m_extents.y,
+                        m_fadeWidth, color(red(m_rectColor), green(m_rectColor), blue(m_rectColor), fade), g);
   }
 }

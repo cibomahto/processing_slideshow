@@ -31,8 +31,8 @@ ImageFinder imageFinder;          // Imagefinder keeps looking for new images
 Thread loadThread;
 
 void setup() {
-  size(screen.width, screen.height, OPENGL);
-//  size(640, 480, OPENGL);
+//  size(screen.width, screen.height, OPENGL);
+  size(640, 480, OPENGL);
 
   grid = new Grid(
     cols, rows, 
