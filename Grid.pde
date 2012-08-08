@@ -11,7 +11,7 @@ class Grid {
   ArrayList<Drawable> drawables;     // List of things we are drawing (todo: wtf)
   
   ArrayList<PImage> images;          // Images we could potentially draw
-  color[] colors;                    // Rectangle colors we can draw
+  ArrayList<Integer> colors;           // Rectangle colors we could draw
   Drawable[] cellAssets;             // objects that we are currently displaying
   
   int[] lifetimes;                   // Lifetimes for each object in the grid
@@ -19,19 +19,22 @@ class Grid {
   int fadeInTime;                    // Number of frames it takes to fade in an asset
   int timeTillNextReplacement;       // Counter so that we don't replace more than one asset at a time
   
-  PVector imageSize;                 // Image size (in pixels)
-  PVector imageSpacing;              // Amount of space from the origin of one image to the next (in pixels)
+  PVector imageSize;                 // Image size, in pixels
+  PVector imageSpacing;              // Amount of space from the origin of one image to the next, inpixels
+  int fadeWidth;                     // Width of the image fade, in pixels
 
   PVector gridOffset;                // Offset of grid from origin, used to center grid in letterboxed scenarios
   
-  Grid(int gridColumns_, int gridRows_, float imageAspectRatio_, int minLifetime_, int fadeInTime_, int cellSpacing_) {
-    images = new ArrayList();
+  Grid(int gridColumns_, int gridRows_, float imageAspectRatio_, int minLifetime_, int fadeInTime_, int cellSpacing_, int fadeWidth_) {
+    images = new ArrayList<PImage>();
+    colors = new ArrayList<Integer>();
     drawables = new ArrayList<Drawable>();
     
     gridColumns = gridColumns_;
     gridRows = gridRows_;
     minLifetime = minLifetime_;
     fadeInTime = fadeInTime_;
+    fadeWidth = fadeWidth_;
     
     // First, see if we have to letterbox
     gridWidth = width;
@@ -64,18 +67,12 @@ class Grid {
     cellAssets =  new Drawable[cellCount];
     lifetimes =  new int[cellCount];
 
-    colors = new color[] {
-      color(220),
-      color(210),
-      color(180),
-      color(190),
-      color(200),
-    };
+    colors.add(color(128,0,0));
 
     // pre-fill with colors
     for (int cell = 0; cell < cellCount; cell++) {
-      int newColorIndex = int(random(int(colors.length)));
-      replaceAsset( cell, colors[newColorIndex] );
+      int newColorIndex = int(random(int(colors.size())));
+      replaceDrawableWithColor( cell, colors.get(newColorIndex) );
     }
 
     // and randomize starting lifetimes   
@@ -98,6 +95,11 @@ class Grid {
     // TODO: remove some images if we have a lot of them (?)
   }
   
+  // Add a new color to the grid
+  void addColor(color color_) {
+    colors.add(color_);
+  }
+  
   // Get a PVector pointing to the location of a cell
   PVector getCellLocation(int cell) {
     int assetX = int(int(cell%gridColumns)*imageSpacing.x + gridOffset.x);
@@ -106,9 +108,10 @@ class Grid {
     return new PVector(assetX, assetY);
   }
 
-  void replaceAsset(int cell, Drawable newAsset) {
+  void replaceDrawable(int cell, Drawable newAsset) {
     // Kill the old asset
     if (cellAssets[cell] != null) {
+      println("killing asset in cell " + cell + ", type=" + cellAssets[cell].getClass().getName());
       cellAssets[cell].scheduleDeath(fadeInTime);
     }
     
@@ -119,21 +122,22 @@ class Grid {
   }
   
   // Replace an existing asset with a new one, killing the old one
-  void replaceAsset(int cell, PImage bitmap) {    
+  void replaceDrawableWithImage(int cell, PImage bitmap) {    
     Drawable newAsset = new DrawableImage( bitmap,
                                            getCellLocation(cell),
                                            imageSize,
                                            fadeInTime);
-    replaceAsset(cell, newAsset);
+    replaceDrawable(cell, newAsset);
   }
 
   // Replace an existing asset with a new one, killing the old one
-  void replaceAsset(int cell, color rectColor) {
+  void replaceDrawableWithColor(int cell, color rectColor) {
     Drawable newAsset = new DrawableRectangle( rectColor,
                                                getCellLocation(cell),
                                                imageSize,
-                                               fadeInTime);
-    replaceAsset(cell, newAsset);
+                                               fadeInTime,
+                                               fadeWidth);
+    replaceDrawable(cell, newAsset);
   }
 
 
@@ -148,8 +152,7 @@ class Grid {
 
     if (timeTillNextReplacement == 0) {
       // Once a cell reaches a certain age, randomly we should replace it
-
-     ArrayList expired = new ArrayList();
+      ArrayList expired = new ArrayList();
       
       // Search for replacable cells
       for (int cell = 0; cell < cellCount; cell++) {
@@ -167,11 +170,11 @@ class Grid {
       
         if ((objectName == "processing_slideshow$DrawableRectangle") && (images.size() > 0)) {
           int newImageIndex = int(random(int(images.size())));
-          replaceAsset( cellToExpire, images.get(newImageIndex) );
+          replaceDrawableWithImage( cellToExpire, images.get(newImageIndex) );
         }
         else {
-          int newColorIndex = int(random(int(colors.length)));
-          replaceAsset( cellToExpire, colors[newColorIndex] );
+          int newColorIndex = int(random(int(colors.size())));
+          replaceDrawableWithColor( cellToExpire, colors.get(newColorIndex) );
         }
 
         timeTillNextReplacement = fadeInTime/2;
@@ -181,8 +184,16 @@ class Grid {
   
   void draw() {
     noStroke();  
-    fill(color(238, 242, 255));
-    rect(gridOffset.x, gridOffset.y, gridWidth, gridHeight);
+//    fill(color(238, 242, 255));
+//    rect(gridOffset.x, gridOffset.y, gridWidth, gridHeight);
+  // Fill the background with a gradient
+  color edgeColor = color(220);
+  color centerColor =  color(255);
+
+  fill(centerColor);
+  rect(gridOffset.x, gridOffset.y, gridWidth, gridHeight);
+  makeRectangle(gridOffset.x, gridOffset.y, gridWidth/4, gridHeight,  edgeColor, centerColor, centerColor, edgeColor, g);
+  makeRectangle(gridOffset.x + gridWidth*3/4, gridOffset.y, gridWidth/4, gridHeight,  centerColor, edgeColor, edgeColor, centerColor, g);
     
     // Handle all of the drawables
     for (int i = 0; i < drawables.size(); i++) {

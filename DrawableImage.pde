@@ -3,7 +3,7 @@ class DrawableImage extends Drawable {
   int fadeInTime;                    // Amount of fade in time
   int fadeInTimeCounter;             // Counter to fade in
   PVector loc = new PVector();             // x,y coordinates of top left corner
-  PVector extents = new PVector();         // height, width of object  
+  PVector extents = new PVector();         // height, width of object
   
   DrawableImage(PImage bitmap_, PVector loc_, PVector extents_, int fadeInTime_) {
     bitmap = bitmap_;
@@ -12,17 +12,6 @@ class DrawableImage extends Drawable {
     
     fadeInTime = fadeInTime_;
     fadeInTimeCounter = fadeInTime_;
-  }
-  
-  void update() {
-    
-    if (timeToDie > 0) {
-      timeToDie -= 1;
-    }
-    
-    if (timeToDie == 0) {
-      dead = true;
-    }
   }
   
   void draw() {
@@ -35,8 +24,15 @@ class DrawableImage extends Drawable {
       image(bitmap, loc.x, loc.y, extents.x, extents.y);
       tint(255);
     }
+    else if(timeToDie > -1) {
+      int fade = int(255.0*(timeToDie)/fadeInTime);
+      
+      tint(255, fade);
+      image(bitmap, loc.x, loc.y, extents.x, extents.y);
+      tint(255);
+    }
     else {
-//      image(bitmap, loc.x, loc.y, extents.x, extents.y);
+      image(bitmap, loc.x, loc.y, extents.x, extents.y);
     }
   }
 }

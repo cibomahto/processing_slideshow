@@ -39,7 +39,25 @@ class ImageFinder implements Runnable {
   // @param bitmap Image to load
   void addImage(PImage bitmap) {
     PVector imageSize = grid.getImageSize();
+    
+    // TODO: Crop to match the aspect ratio...
+    
+    // Resize the image
     bitmap.resize(int(imageSize.x), int(imageSize.y));
+    
+    // Apply a mask to fade the edge of the bitmap
+    PGraphics msk;
+    msk = createGraphics(bitmap.width,bitmap.height, P2D);
+
+    msk.beginDraw();
+    msk.noStroke();
+    msk.background(0);
+    drawFuzzyRectangle(0,0,bitmap.width,bitmap.height,
+                       grid.fadeWidth, color(255,255,255), msk);
+    msk.endDraw();
+    bitmap.mask(msk);
+//    bitmap.blend(msk, 0,0,bitmap.width, bitmap.height, 0,0,bitmap.width,bitmap.height,MULTIPLY);
+
     
     // Add some sample images
     try{ 
