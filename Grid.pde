@@ -25,7 +25,7 @@ class Grid {
 
   PVector m_gridOffset;                // Offset of grid from origin, used to center grid in letterboxed scenarios
   
-  Grid(int gridColumns, int gridRows, float imageAspectRatio_, int minLifetime, int fadeInTime, int cellSpacing, int fadeWidth) {
+  Grid(int gridColumns, int gridRows, float imageAspectRatio_, int minLifetime, int fadeInTime, int cellSpacing, int fadeWidth, color colors[]) {
     m_images = new ArrayList<PImage>();
     m_colors = new ArrayList<Integer>();
     m_drawables = new ArrayList<Drawable>();
@@ -67,7 +67,11 @@ class Grid {
     m_cellAssets =  new Drawable[m_cellCount];
     m_lifetimes =  new int[m_cellCount];
 
-    m_colors.add(color(128,0,0));
+    // Add colors to the grid
+    for(int i = 0; i < colors.length; i++) {
+      m_colors.add(colors[i]);
+    }
+  
 
     // pre-fill with colors
     for (int cell = 0; cell < m_cellCount; cell++) {
@@ -90,11 +94,6 @@ class Grid {
     // TODO: remove some images if we have a lot of them (?)
   }
   
-  // Add a new color to the grid
-  void addColor(color color_) {
-    m_colors.add(color_);
-  }
-  
   // Get a PVector pointing to the location of a cell
   PVector getCellLocation(int cell) {
     int assetX = int(int(cell%m_gridColumns)*m_imageSpacing.x + m_gridOffset.x);
@@ -106,7 +105,6 @@ class Grid {
   void replaceDrawable(int cell, Drawable newAsset) {
     // Kill the old asset
     if (m_cellAssets[cell] != null) {
-      println("killing asset in cell " + cell + ", type=" + m_cellAssets[cell].getClass().getName());
       m_cellAssets[cell].scheduleDeath(m_fadeInTime);
     }
     

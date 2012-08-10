@@ -40,7 +40,21 @@ class ImageFinder implements Runnable {
   void addImage(PImage bitmap) {
     PVector imageSize = grid.m_imageSize;
     
-    // TODO: Crop to match the aspect ratio...
+    // If the aspect ratio of the image isn't correct, crop it.
+    if(abs(1.0*bitmap.width/bitmap.height - imageSize.x/imageSize.y) > .005) {
+      int targetWidth;
+      int targetHeight;
+      if (1.0*bitmap.width/bitmap.height > imageSize.x/imageSize.y) {
+        targetWidth = int(bitmap.height/imageSize.y*imageSize.x);
+        targetHeight = bitmap.height;
+      }
+      else {
+        targetWidth = bitmap.width;
+        targetHeight = int(bitmap.width/imageSize.x*imageSize.y);
+      }
+
+      bitmap = bitmap.get((bitmap.width-targetWidth)/2, (bitmap.height-targetHeight)/2, targetWidth, targetHeight);
+    }
     
     // Resize the image
     bitmap.resize(int(imageSize.x), int(imageSize.y));
@@ -48,7 +62,6 @@ class ImageFinder implements Runnable {
     // Apply a mask to fade the edge of the bitmap
     PGraphics msk;
     msk = createGraphics(bitmap.width,bitmap.height, P2D);
-
     msk.beginDraw();
     msk.noStroke();
     msk.background(0);
@@ -56,8 +69,6 @@ class ImageFinder implements Runnable {
                        grid.m_fadeWidth, color(255,255,255), msk);
     msk.endDraw();
     bitmap.mask(msk);
-//    bitmap.blend(msk, 0,0,bitmap.width, bitmap.height, 0,0,bitmap.width,bitmap.height,MULTIPLY);
-
     
     // Add some sample images
     try{ 
@@ -93,7 +104,6 @@ class ImageFinder implements Runnable {
       
       Date newLastChecked = new Date();
       
-      println("Checking for files modified after" + lastChecked);
       // Find anything in the directory that looks like an image, and open it.
       files = listFiles(m_path);
       for (int i = 0; i < files.length; i++) {
