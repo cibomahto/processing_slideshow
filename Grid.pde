@@ -183,15 +183,21 @@ class Grid {
   color edgeColor = color(220);
   color centerColor =  color(255);
 
-  fill(centerColor);
-  rect(m_gridOffset.x, m_gridOffset.y, m_gridWidth, m_gridHeight);
-  makeRectangle(m_gridOffset.x, m_gridOffset.y, m_gridWidth/4, m_gridHeight,  edgeColor, centerColor, centerColor, edgeColor, g);
-  makeRectangle(m_gridOffset.x + m_gridWidth*3/4, m_gridOffset.y, m_gridWidth/4, m_gridHeight,  centerColor, edgeColor, edgeColor, centerColor, g);
+//  fill(centerColor);
+//  rect(m_gridOffset.x, m_gridOffset.y, m_gridWidth, m_gridHeight);
+//  makeRectangle(m_gridOffset.x, m_gridOffset.y, m_gridWidth/4, m_gridHeight,  edgeColor, centerColor, centerColor, edgeColor, g);
+//  makeRectangle(m_gridOffset.x + m_gridWidth*3/4, m_gridOffset.y, m_gridWidth/4, m_gridHeight,  centerColor, edgeColor, edgeColor, centerColor, g);
     
     // Handle all of the drawables
     for (int i = 0; i < m_drawables.size(); i++) {
       m_drawables.get(i).update();
+      
+      pushMatrix();
+      translate(screen.width/2, screen.height/2);
+//      rotateZ(PI/2/10);
+      translate(-screen.width/2, -screen.height/2);
       m_drawables.get(i).draw();
+      popMatrix();
     }
     
     // Remove dead drawables

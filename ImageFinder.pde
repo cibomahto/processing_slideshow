@@ -22,10 +22,10 @@ File[] listFiles(String dir) {
 
 // Image finder load all available images, then periodically searches for new ones.
 // It then passes them to the grid for display.
-class ImageFinder implements Runnable {
+class ImageFinder extends Thread {
 
   String m_path;                             // Directory that we should be scanning for new images
-  LinkedBlockingQueue<PImage> readyQueue;  // Queue holding the images that are ready to shove out the door
+  LinkedBlockingQueue<PImage> readyQueue;    // Queue holding the images that are ready to shove out the door
   
   // Init a new Image Finder
   // @param path_ directory scan for images (note: this is relative to the data/ directory of the sketch)
@@ -33,51 +33,6 @@ class ImageFinder implements Runnable {
     m_path = path;
     readyQueue = new LinkedBlockingQueue<PImage>();
   }
-
-
-  // Preprocess the image, and add it to the ready queue.
-  // @param bitmap Image to load
-  void addImage(PImage bitmap) {
-    PVector imageSize = grid.m_imageSize;
-    
-    // If the aspect ratio of the image isn't correct, crop it.
-    if(abs(1.0*bitmap.width/bitmap.height - imageSize.x/imageSize.y) > .005) {
-      int targetWidth;
-      int targetHeight;
-      if (1.0*bitmap.width/bitmap.height > imageSize.x/imageSize.y) {
-        targetWidth = int(bitmap.height/imageSize.y*imageSize.x);
-        targetHeight = bitmap.height;
-      }
-      else {
-        targetWidth = bitmap.width;
-        targetHeight = int(bitmap.width/imageSize.x*imageSize.y);
-      }
-
-      bitmap = bitmap.get((bitmap.width-targetWidth)/2, (bitmap.height-targetHeight)/2, targetWidth, targetHeight);
-    }
-    
-    // Resize the image
-    bitmap.resize(int(imageSize.x), int(imageSize.y));
-    
-    // Apply a mask to fade the edge of the bitmap
-    PGraphics msk;
-    msk = createGraphics(bitmap.width,bitmap.height, P2D);
-    msk.beginDraw();
-    msk.noStroke();
-    msk.background(0);
-    drawFuzzyRectangle(0,0,bitmap.width,bitmap.height,
-                       grid.m_fadeWidth, color(255,255,255), msk);
-    msk.endDraw();
-    bitmap.mask(msk);
-    
-    // Add some sample images
-    try{ 
-      readyQueue.put(bitmap);
-    } catch( InterruptedException e ) {
-      println("Interrupted Exception caught");
-    }
-  }
-  
   
   public void run() {
     
@@ -119,6 +74,52 @@ class ImageFinder implements Runnable {
       }
       
       lastChecked = newLastChecked;
+    }
+  }
+
+  // Preprocess the image, and add it to the ready queue.
+  // @param bitmap Image to load
+  void addImage(PImage bitmap) {
+    PVector imageSize = grid.m_imageSize;
+    
+    // Center crop the image so that the aspect ratio is correct
+    if(abs(float(bitmap.width)/bitmap.height - imageSize.x/imageSize.y) > .005) {
+      
+      int targetWidth;
+      int targetHeight;
+      
+      if (1.0*bitmap.width/bitmap.height > imageSize.x/imageSize.y) {
+        targetWidth = int(bitmap.height/imageSize.y*imageSize.x);
+        targetHeight = bitmap.height;
+      }
+      else {
+        targetWidth = bitmap.width;
+        targetHeight = int(bitmap.width/imageSize.x*imageSize.y);
+      }
+
+      bitmap = bitmap.get((bitmap.width-targetWidth)/2, (bitmap.height-targetHeight)/2, targetWidth, targetHeight);
+    }
+    
+    // Then resize to fit on the screen
+    bitmap.resize(int(imageSize.x), int(imageSize.y));
+    
+    
+    // Apply a mask to fade the edge of the bitmap
+    PGraphics msk;
+    msk = createGraphics(bitmap.width,bitmap.height, P2D);
+    msk.beginDraw();
+    msk.noStroke();
+    msk.background(0);
+    drawFuzzyRectangle(0,0,bitmap.width,bitmap.height,
+                       grid.m_fadeWidth, color(255,255,255), msk);
+    msk.endDraw();
+    bitmap.mask(msk);
+    
+    // Add some sample images
+    try{
+      readyQueue.put(bitmap);
+    } catch( InterruptedException e ) {
+      println("Interrupted Exception caught");
     }
   }
   

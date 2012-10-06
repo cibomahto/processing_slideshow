@@ -72,8 +72,8 @@ void drawFuzzyRectangle(float x, float y, float widt, float heigh,
   makeRectangle(x, y+rad,            rad, heigh-2*rad,        bgcolor, fgcolor, fgcolor, bgcolor, context);
   makeRectangle(x+rad, y+rad+heigh-2*rad,  widt-2*rad, rad,   fgcolor, fgcolor, bgcolor, bgcolor, context);
   makeRectangle(x+widt-rad, y+rad,   rad, heigh-2*rad,        fgcolor, bgcolor, bgcolor, fgcolor, context);
-  makeGradientCorner(x+widt-rad, y+rad,       rad, 8,  0,   fgcolor, bgcolor, context);
-  makeGradientCorner(x+rad, y+rad,            rad, 8,  1,   fgcolor, bgcolor, context);
-  makeGradientCorner(x+rad, y+heigh-rad,      rad, 8,  2,   fgcolor, bgcolor, context);
-  makeGradientCorner(x+widt-rad, y+heigh-rad, rad, 8,  3,   fgcolor, bgcolor, context);
+  makeGradientCorner(x+widt-rad, y+rad,       rad, 9,  0,   fgcolor, bgcolor, context);
+  makeGradientCorner(x+rad, y+rad,            rad, 9,  1,   fgcolor, bgcolor, context);
+  makeGradientCorner(x+rad, y+heigh-rad,      rad, 9,  2,   fgcolor, bgcolor, context);
+  makeGradientCorner(x+widt-rad, y+heigh-rad, rad, 9,  3,   fgcolor, bgcolor, context);
 }

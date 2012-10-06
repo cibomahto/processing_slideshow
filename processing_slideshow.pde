@@ -8,12 +8,12 @@ import java.util.concurrent.*;
 
 /////////////////////////  Configuration options  /////////////////////////
 int cols = 4;                     // Number of columns
-int rows = 2;                     // Number of rows
+int rows = 1;                     // Number of rows
 //float assetAspectRatio = 3.0/2;   // Aspect ratio of the image assets
 float assetAspectRatio = 1.1;   // Aspect ratio of the image assets
 
 int cellSpacing = -10;              // Spacing between images, in pixels
-int fadeWidth = 50;                // Amount of blur at image edges, in pixels
+int fadeWidth = 25;                // Amount of blur at image edges, in pixels
 
 int transitionSpeed = 150;        // How long an image transition takes (frames)
 int assetLifetime = 300;          // Length of time (frames) that an image will last.
@@ -31,12 +31,13 @@ color gridColors[] = new color[] {
 /////////////////////////  Configuration options  /////////////////////////
 
 Grid grid;                        // Grid displays images in a random order
+OverlayText overlayText;          // Text watermark
 ImageFinder imageFinder;          // Imagefinder keeps looking for new images
-Thread loadThread;
 
 void setup() {
-  size(screen.width, screen.height, OPENGL);
-//  size(640, 480, OPENGL);
+//  size(screen.width, screen.height, OPENGL);
+  size(640, 480, OPENGL);
+  noCursor();
 
   grid = new Grid(
     cols, rows, 
@@ -49,15 +50,15 @@ void setup() {
   );
 
   imageFinder = new ImageFinder(sketchPath + "/data");
-  loadThread = new Thread(imageFinder);
-  loadThread.start();
+  imageFinder.start();
+  
+  overlayText = new OverlayText("#tweetme");
 }
 
 
 void draw() {
   // If we have any new images available, add them
   if (imageFinder.imageAvailable()) {
-    println("Found new file");
     grid.addImage(imageFinder.getNextImage());
   }
 
@@ -70,5 +71,7 @@ void draw() {
   rect(0, 0, width, height);
 
   grid.draw();
+  
+  overlayText.draw();
 }
 
