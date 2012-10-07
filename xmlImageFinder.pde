@@ -35,7 +35,7 @@ class XmlImageFinder extends Thread {
       }
       
       try{ 
-        Thread.sleep(10000); // sleep for 10 seconds
+        Thread.sleep(2000); // sleep for 2 seconds
       } catch( InterruptedException e ) {
         println("Interrupted Exception caught");
       }
