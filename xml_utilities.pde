@@ -5,7 +5,7 @@
 // Usage example:
 //
 //  String updateURL = "http://dev.canalmercer.com/index.php/moderate/feed";
-//  String historyFile = "/Users/matthewmets/Documents/Processing/test_loaddata/data/feed.xml";
+//  String historyFile = dataPath("feed.xml");
 //
 //  // Restore the last set of images that we knew about
 //  Map<Integer, String> currentImages = readImageList(historyFile);

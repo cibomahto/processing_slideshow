@@ -10,20 +10,16 @@ import java.util.concurrent.*;
 int cols = 4;                     // Number of columns
 int rows = 3;                     // Number of rows
 //float assetAspectRatio = 3.0/2;   // Aspect ratio of the image assets
-float assetAspectRatio = 1.1;   // Aspect ratio of the image assets
+float assetAspectRatio = 1.0;   // Aspect ratio of the image assets
 
-int cellSpacing = -10;              // Spacing between images, in pixels
-int fadeWidth = 25;                // Amount of blur at image edges, in pixels
+int cellSpacing = 3;              // Spacing between images, in pixels
+int fadeWidth = 5;                // Amount of blur at image edges, in pixels
 
 int transitionSpeed = 150;        // How long an image transition takes (frames)
 int assetLifetime = 300;          // Length of time (frames) that an image will last.
 
 color gridColors[] = new color[] {
-      color(20,20,20),
-      color(30,30,30),
-//      color(220),
-//      color(200),
-//      color(180),
+      color(10,10,10),
     };
 
 /////////////////////////  Configuration options  /////////////////////////
@@ -33,8 +29,8 @@ OverlayText overlayText;          // Text watermark
 XmlImageFinder imageFinder;          // Imagefinder keeps looking for new images
 
 void setup() {
-  size(screen.width, screen.height, OPENGL);
-//  size(640, 480, OPENGL);
+//  size(screen.width, screen.height, OPENGL);
+  size(640, 480, OPENGL);
   noCursor();
 
   grid = new Grid(
@@ -48,7 +44,7 @@ void setup() {
   );
 
 //  imageFinder = new ImageFinder(sketchPath + "/data");
-  imageFinder = new XmlImageFinder("http://dev.canalmercer.com/index.php/moderate/feed", "/Users/matthewmets/Documents/Processing/test_loaddata/data/feed.xml");
+  imageFinder = new XmlImageFinder("http://dev.canalmercer.com/index.php/moderate/feed", dataPath("feed.xml"));
   imageFinder.start();
   
   overlayText = new OverlayText("#coolphotosbro");

@@ -21,12 +21,18 @@ class XmlImageFinder extends Thread {
     Iterator it = currentImages.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry pairs = (Map.Entry)it.next();
-      
       addImage((String)pairs.getValue());
     }
     
     while(true) {
-      // We should be polling for new images here, and adding them
+      // Poll for new images, and add them to the queue.
+      Map<Integer, String> newImages = updateImageList(m_historyFile, m_updateURL);
+      it = newImages.entrySet().iterator();
+      while (it.hasNext()) {
+        Map.Entry pairs = (Map.Entry)it.next();
+        println("Found new image! " + pairs.getValue());
+        addImage((String)pairs.getValue());
+      }
       
       try{ 
         Thread.sleep(10000); // sleep for 10 seconds

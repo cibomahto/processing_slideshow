@@ -42,12 +42,12 @@ class Grid {
     
     float targetAspectRatio = imageAspectRatio_*m_gridColumns/m_gridRows;
     
-    if (abs(m_gridWidth/m_gridHeight - targetAspectRatio) > .001) {
-      if (targetAspectRatio > m_gridWidth/m_gridHeight) {
-        m_gridHeight = int(m_gridWidth/targetAspectRatio);
+    if (abs((float)m_gridWidth/m_gridHeight - targetAspectRatio) > .001) {
+      if (targetAspectRatio > (float)m_gridWidth/m_gridHeight) {
+        m_gridHeight = int((float)m_gridWidth/targetAspectRatio);
       }
       else {
-        m_gridWidth = int(m_gridHeight*targetAspectRatio);
+        m_gridWidth = int((float)m_gridHeight*targetAspectRatio);
       }
     }
 
