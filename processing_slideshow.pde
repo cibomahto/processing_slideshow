@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 
 /////////////////////////  Configuration options  /////////////////////////
 
-int cols = 4;                     // Number of columns
+int cols = 5;                     // Number of columns
 int rows = 3;                     // Number of rows
 //float assetAspectRatio = 3.0/2;   // Aspect ratio of the image assets
 float assetAspectRatio = 1;   // Aspect ratio of the image assets
@@ -27,7 +27,7 @@ String overlayTextTitle = "#coolphotosbro";
 float overlayTextSize = 50;
 color overlayTextColor = color(255,255,255);
 
-color backgroundColor = color(255,255,255);
+color backgroundColor = color(0,0,0);
 
 /////////////////////////  Configuration options  /////////////////////////
 
