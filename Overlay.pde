@@ -4,9 +4,9 @@ class OverlayText {
   PFont m_font;
   color m_textColor;
   
-  OverlayText(String title, color textColor) {
+  OverlayText(String title, float textSize, color textColor) {
     m_title = title;
-    m_font = createFont("Helvetica", 80);
+    m_font = createFont("Helvetica", textSize);
     m_textColor = textColor;
   }
   

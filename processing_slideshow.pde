@@ -16,15 +16,18 @@ float assetAspectRatio = 1;   // Aspect ratio of the image assets
 int cellSpacing = 3;              // Spacing between images, in pixels
 int fadeWidth = 5;                // Amount of blur at image edges, in pixels
 
-int transitionSpeed = 15;        // How long an image transition takes (frames)
+int transitionSpeed = 150;        // How long an image transition takes (frames)
 int assetLifetime = 300;          // Length of time (frames) that an image will last.
 
 color gridColors[] = new color[] {
   color(10,10,10),
 };
 
-String overlayTextMessage = "#coolphotosbro";
+String overlayTextTitle = "#coolphotosbro";
+float overlayTextSize = 50;
 color overlayTextColor = color(255,255,255);
+
+color backgroundColor = color(255,255,255);
 
 /////////////////////////  Configuration options  /////////////////////////
 
@@ -36,8 +39,8 @@ XmlImageFinder imageFinder;          // Imagefinder keeps looking for new images
 
 
 void setup() {
-//  size(screen.width, screen.height, OPENGL);
-  size(640, 480, OPENGL);
+  size(screen.width, screen.height, OPENGL);
+//  size(640, 480, OPENGL);
   noCursor();
 
   grid = new Grid(
@@ -54,7 +57,7 @@ void setup() {
   imageFinder = new XmlImageFinder("http://dev.canalmercer.com/index.php/moderate/feed", dataPath("feed.xml"));
   imageFinder.start();
   
-  overlayText = new OverlayText(overlayTextMessage, overlayTextColor);
+  overlayText = new OverlayText(overlayTextTitle, overlayTextSize, overlayTextColor);
 }
 
 
@@ -69,7 +72,7 @@ void draw() {
 
   // Re-draw the display
   noStroke();
-  fill(color(0));
+  fill(backgroundColor);
   rect(0, 0, width, height);
 
   grid.draw();

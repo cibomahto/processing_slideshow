@@ -46,6 +46,8 @@ class XmlImageFinder extends Thread {
   // Preprocess the image, and add it to the ready queue.
   // @param bitmap Image to load
   void addImage(String imageURL) {
+    // TODO: Attempt to cache the image locally, or use the cache if it already exists.
+    
     PImage bitmap = loadImage(imageURL);
     if (bitmap == null) {
       println("Bad image from " + imageURL + ", skipping.");
