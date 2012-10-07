@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 
 /////////////////////////  Configuration options  /////////////////////////
 int cols = 4;                     // Number of columns
-int rows = 1;                     // Number of rows
+int rows = 3;                     // Number of rows
 //float assetAspectRatio = 3.0/2;   // Aspect ratio of the image assets
 float assetAspectRatio = 1.1;   // Aspect ratio of the image assets
 
@@ -19,10 +19,8 @@ int transitionSpeed = 150;        // How long an image transition takes (frames)
 int assetLifetime = 300;          // Length of time (frames) that an image will last.
 
 color gridColors[] = new color[] {
-      color(60,20,20),
-      color(80,20,20),
-      color(100,20,20),
-      color(120,20,20),
+      color(20,20,20),
+      color(30,30,30),
 //      color(220),
 //      color(200),
 //      color(180),
@@ -32,11 +30,11 @@ color gridColors[] = new color[] {
 
 Grid grid;                        // Grid displays images in a random order
 OverlayText overlayText;          // Text watermark
-ImageFinder imageFinder;          // Imagefinder keeps looking for new images
+XmlImageFinder imageFinder;          // Imagefinder keeps looking for new images
 
 void setup() {
-//  size(screen.width, screen.height, OPENGL);
-  size(640, 480, OPENGL);
+  size(screen.width, screen.height, OPENGL);
+//  size(640, 480, OPENGL);
   noCursor();
 
   grid = new Grid(
@@ -49,10 +47,11 @@ void setup() {
     gridColors
   );
 
-  imageFinder = new ImageFinder(sketchPath + "/data");
+//  imageFinder = new ImageFinder(sketchPath + "/data");
+  imageFinder = new XmlImageFinder("http://dev.canalmercer.com/index.php/moderate/feed", "/Users/matthewmets/Documents/Processing/test_loaddata/data/feed.xml");
   imageFinder.start();
   
-  overlayText = new OverlayText("#tweetme");
+  overlayText = new OverlayText("#coolphotosbro");
 }
 
 
