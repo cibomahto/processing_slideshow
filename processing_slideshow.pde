@@ -8,16 +8,16 @@ import java.util.concurrent.*;
 
 /////////////////////////  Configuration options  /////////////////////////
 
-int cols = 5;                     // Number of columns
-int rows = 3;                     // Number of rows
+int cols = 10;                     // Number of columns
+int rows = 6;                     // Number of rows
 //float assetAspectRatio = 3.0/2;   // Aspect ratio of the image assets
 float assetAspectRatio = 1;   // Aspect ratio of the image assets
 
 int cellSpacing = 3;              // Spacing between images, in pixels
 int fadeWidth = 5;                // Amount of blur at image edges, in pixels
 
-int transitionSpeed = 150;        // How long an image transition takes (frames)
-int assetLifetime = 300;          // Length of time (frames) that an image will last.
+int transitionSpeed = 5;        // How long an image transition takes (frames)
+int assetLifetime = 10;          // Length of time (frames) that an image will last.
 
 color gridColors[] = new color[] {
   color(10,10,10),
