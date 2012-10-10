@@ -1,3 +1,6 @@
+import fullscreen.*;
+import japplemenubar.*;
+
 /**
  * Grid-based screensaver thingy
  * looks for new photos and displays them
@@ -8,9 +11,9 @@ import java.util.concurrent.*;
 
 /////////////////////////  Configuration options  /////////////////////////
 
-int cols = 6;                     // Number of columns
-int rows = 4;                     // Number of rows
-//float assetAspectRatio = 3.0/2;   // Aspect ratio of the image assets
+int cols = 5;                     // Number of columns
+int rows = 3;                     // Number of rows
+//float assetAspectRatio = 3.0/2;   // Aspect ratio of the imdage assets
 float assetAspectRatio = 1;   // Aspect ratio of the image assets
 
 int cellSpacing = 3;              // Spacing between images, in pixels
@@ -24,7 +27,7 @@ color gridColors[] = new color[] {
 };
 
 String overlayTextTitle = "#sweet5";
-float overlayTextSize = 50;
+float overlayTextSize = 80;
 color overlayTextColor = color(255,255,255);
 
 color backgroundColor = color(0,0,0);
@@ -37,11 +40,15 @@ Grid grid;                        // Grid displays images in a random order
 OverlayText overlayText;          // Text watermark
 XmlImageFinder imageFinder;          // Imagefinder keeps looking for new images
 
+SoftFullScreen fs; 
 
 void setup() {
   size(screen.width, screen.height, OPENGL);
 //  size(640, 480, OPENGL);
   noCursor();
+  
+  fs = new SoftFullScreen(this,1);
+  fs.enter();
 
   grid = new Grid(
     cols, rows, 
