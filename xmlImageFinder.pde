@@ -18,7 +18,6 @@ class XmlImageFinder extends Thread {
   
   public void run() {
     addImage("image001.jpg");
-    addImage("image002.jpg");
     
     Map<Integer, String> currentImages = readImageList(m_historyFile);
     Iterator it = currentImages.entrySet().iterator();

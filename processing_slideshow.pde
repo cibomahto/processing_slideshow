@@ -14,7 +14,7 @@ import java.util.concurrent.*;
 int cols = 5;                     // Number of columns
 int rows = 3;                     // Number of rows
 //float assetAspectRatio = 3.0/2;   // Aspect ratio of the imdage assets
-float assetAspectRatio = 1;   // Aspect ratio of the image assets
+float assetAspectRatio = 1.2;   // Aspect ratio of the image assets
 
 int cellSpacing = 3;              // Spacing between images, in pixels
 int fadeWidth = 5;                // Amount of blur at image edges, in pixels
@@ -26,7 +26,7 @@ color gridColors[] = new color[] {
   color(10,10,10),
 };
 
-String overlayTextTitle = "#sweet5";
+String overlayTextTitle = "Instagram #sweet5";
 float overlayTextSize = 80;
 color overlayTextColor = color(255,255,255);
 
