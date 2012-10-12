@@ -1,5 +1,8 @@
 // Image finder load all available images, then periodically searches for new ones.
 // It then passes them to the grid for display.
+
+import java.io.File;
+
 class XmlImageFinder extends Thread {
 
   String m_updateURL;                          // URL to hit for new images
@@ -50,12 +53,27 @@ class XmlImageFinder extends Thread {
   void addImage(String imageURL) {
     // TODO: Attempt to cache the image locally, or use the cache if it already exists.
     
-    PImage bitmap = loadImage(imageURL);
+    // Check if we have a local copy of this; if so, just load it.
+    File imageName = new File(imageURL);
+    println(imageName.getName());
+    
+    PImage bitmap = loadImage("data/" + imageName.getName());
     if (bitmap == null) {
-      println("Bad image from " + imageURL + ", skipping.");
-      return;
+      // We don't have the image; try to load it from the full URL
+      println("don't have it, have to fetch from the source!");
+      
+      bitmap = loadImage(imageURL);
+      if (bitmap == null) {
+        println("Bad image from " + imageURL + ", skipping.");
+        return;
+      }
+      
+      println("Adding image from " + imageURL);
+      bitmap.save("data/" + imageName.getName());
     }
-    println("Adding image from " + imageURL);
+    else {
+      println("already have it, good to go!");
+    }
     
     PVector imageSize = grid.m_imageSize;
     
