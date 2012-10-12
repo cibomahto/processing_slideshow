@@ -32,6 +32,9 @@ color overlayTextColor = color(255,255,255);
 
 color backgroundColor = color(0,0,0);
 
+//String serverAddress = "http://dev.canalmercer.com/index.php/moderate/feed";
+String serverAddress = "192.168.1.179";
+
 /////////////////////////  Configuration options  /////////////////////////
 
 
@@ -61,7 +64,7 @@ void setup() {
   );
 
 //  imageFinder = new ImageFinder(sketchPath + "/data");
-  imageFinder = new XmlImageFinder("http://dev.canalmercer.com/index.php/moderate/feed", dataPath("feed.xml"));
+  imageFinder = new XmlImageFinder(serverAddress, dataPath("feed.xml"));
   imageFinder.start();
   
   overlayText = new OverlayText(overlayTextTitle, overlayTextSize, overlayTextColor);
