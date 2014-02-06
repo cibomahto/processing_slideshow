@@ -1,3 +1,5 @@
+import java.util.Date;
+
 // Some helper functions and a class to continuously scan a directory for new images, load them,
 // then scale to an appropriate resolution and pass them to a display consumer.
 

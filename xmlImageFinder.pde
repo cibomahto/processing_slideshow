@@ -1,3 +1,6 @@
+import java.util.Map;
+import java.util.Iterator;
+
 // Image finder load all available images, then periodically searches for new ones.
 // It then passes them to the grid for display.
 class XmlImageFinder extends Thread {
@@ -81,7 +84,7 @@ class XmlImageFinder extends Thread {
     
     // Apply a mask to fade the edge of the bitmap
     PGraphics msk;
-    msk = createGraphics(bitmap.width,bitmap.height, P2D);
+    msk = createGraphics(bitmap.width,bitmap.height);
     msk.beginDraw();
     msk.noStroke();
     msk.background(0);

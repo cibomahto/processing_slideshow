@@ -39,7 +39,7 @@ XmlImageFinder imageFinder;          // Imagefinder keeps looking for new images
 
 
 void setup() {
-  size(screen.width, screen.height, OPENGL);
+  size(displayWidth, displayHeight);
 //  size(640, 480, OPENGL);
   noCursor();
 

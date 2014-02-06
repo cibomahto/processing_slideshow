@@ -1,3 +1,6 @@
+import java.io.PrintStream;
+import java.io.FileNotFoundException;
+
 // Simple tools to maintain a list of available images, that are stored in XML.
 // 
 // By Matt Mets, 2012
