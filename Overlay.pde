@@ -13,6 +13,6 @@ class OverlayText {
   void draw() {
     textFont(m_font);
     fill(m_textColor);
-    text(m_title, width - textWidth(m_title) - textDescent(), height - textDescent());
+    text(m_title, width - textWidth(m_title) - textDescent(), textAscent()); //height - textDescent());
   }
 }
